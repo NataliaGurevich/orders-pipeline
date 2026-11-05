@@ -1,32 +1,27 @@
+# ВЫЗЫВАЮЩИЙ workflow:
+# собственных шагов у него нет.
+# Он вызывает checks.yml.
+
 name: CI
 
 on:
   push:
     branches: [main]
+
   pull_request:
     branches: [main]
 
 permissions:
+  # Вызываемый workflow может сохранить или уменьшить эти права,
+  # но не может самостоятельно расширить их.
   contents: read
 
 jobs:
-  test:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+  checks:
+    # Этот идентификатор задания будет частью названия
+    # проверки в pull request.
+    uses: ./.github/workflows/checks.yml
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-          cache: pip
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Lint
-        run: ruff check .
-
-      - name: Run tests
-        run: pytest -q
+    # Параметры, передаваемые вызываемому workflow.
+    with:
+      python-version: "3.12"
