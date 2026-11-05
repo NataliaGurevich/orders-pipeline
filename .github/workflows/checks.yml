@@ -1,0 +1,43 @@
+# ВЫЗЫВАЕМЫЙ reusable workflow:
+# проверки из первого дня, записанные в одном месте.
+# Другие workflow могут вызывать этот файл.
+
+name: Checks
+
+on:
+  workflow_call:
+    # Значения, которые вызывающий workflow может передать,
+    # подобно аргументам функции.
+    inputs:
+      python-version:
+        description: "Версия Python для тестирования"
+        required: false
+        type: string
+
+        # Используется, если вызывающий workflow ничего не передал.
+        default: "3.12"
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          # Значение, переданное caller workflow,
+          # либо значение по умолчанию.
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Run tests
+        run: pytest -q
